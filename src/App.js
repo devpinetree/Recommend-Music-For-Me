@@ -6,32 +6,35 @@ const { Configuration, OpenAIApi } = require('openai');
 
 function App() {
   const [music, setMusic] = useState({ title: '', artist: '', img: '' });
-  const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g; // 특수문자 정규식
+  const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g; // eslint-disable-line
 
   // Mania search API 호출
-  const fetchMusicSearchApi = useCallback((keyword) => {
-    const sr = 'album';
+  const fetchMusicSearchApi = useCallback(
+    (keyword) => {
+      const sr = 'album';
 
-    fetch(`/api/search/${keyword}/?sr=${sr}&display=1&v=0.5`)
-      .then((response) => response.text())
-      .then((str) => new XMLParser().parseFromString(str))
-      .then((data) => {
-        const { children } = data.children[0];
-        const item = children.filter((child) => child.name === 'item')[0]
-          .children;
+      fetch(`/api/search/${keyword}/?sr=${sr}&display=1&v=0.5`)
+        .then((response) => response.text())
+        .then((str) => new XMLParser().parseFromString(str))
+        .then((data) => {
+          const { children } = data.children[0];
+          const item = children.filter((child) => child.name === 'item')[0]
+            .children;
 
-        const text = item.filter((el) => el.name === 'title')[0].value;
-        const img = item
-          .filter((el) => el.name === 'image')[0]
-          .value.replace('>', '');
-        const [artist, title] = text.split(regExp);
+          const text = item.filter((el) => el.name === 'title')[0].value;
+          const img = item
+            .filter((el) => el.name === 'image')[0]
+            .value.replace('>', '');
+          const [artist, title] = text.split(regExp);
 
-        setMusic({ title, artist, img });
-      })
-      .catch((error) => {
-        console.log(`error: ${error}`);
-      });
-  }, []);
+          setMusic({ title, artist, img });
+        })
+        .catch((error) => {
+          console.log(`error: ${error}`);
+        });
+    },
+    [regExp]
+  );
 
   // OpenAI API 호출
   const fetchOpenAIApi = useCallback(() => {
@@ -54,11 +57,11 @@ function App() {
 
         fetchMusicSearchApi(title);
       });
-  }, []);
+  }, [fetchMusicSearchApi]);
 
   useEffect(() => {
     fetchOpenAIApi(); // Mount 시 호출한다.
-  }, []);
+  }, [fetchOpenAIApi]);
 
   const { title, artist, img } = music;
 
