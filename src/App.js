@@ -1,40 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
+import './App.css';
 
+const XMLParser = require('react-xml-parser');
 const { Configuration, OpenAIApi } = require('openai');
 
 function App() {
-  const [music, setMusic] = useState({ title: '', singer: '' });
+  const [music, setMusic] = useState({ title: '', artist: '', img: '' });
+  const regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/g; // 특수문자 정규식
 
   // Mania search API 호출
-  const fetchMusicSearchApi = useCallback(() => {
-    const { title, singer } = music;
-    const searchKeyword = 'Poker Face'; // FIXME: 추후 수정 예정
+  const fetchMusicSearchApi = useCallback((keyword) => {
+    const sr = 'album';
 
-    fetch(`/api/search/${searchKeyword}/?sr=song&display=10&v=0.5`)
+    fetch(`/api/search/${keyword}/?sr=${sr}&display=1&v=0.5`)
       .then((response) => response.text())
-      .then((str) => new window.DOMParser().parseFromString(str, 'text/xml'))
+      .then((str) => new XMLParser().parseFromString(str))
       .then((data) => {
-        console.log(data);
-        const items = data.querySelectorAll('item');
+        const { children } = data.children[0];
+        const item = children.filter((child) => child.name === 'item')[0]
+          .children;
 
-        let html = ``;
-        items.forEach((el) => {
-          html += `
-            <article>
-              <img src="${
-                el.querySelector('link').innerHTML
-              }/image/large.png" alt="">
-              <h2>
-                <a href="${
-                  el.querySelector('link').innerHTML
-                }" target="_blank" rel="noopener">
-                  ${el.querySelector('title').innerHTML}
-                </a>
-              </h2>
-            </article>
-          `;
-        });
-        document.body.insertAdjacentHTML('beforeend', html);
+        const text = item.filter((el) => el.name === 'title')[0].value;
+        const img = item
+          .filter((el) => el.name === 'image')[0]
+          .value.replace('>', '');
+        const [artist, title] = text.split(regExp);
+
+        setMusic({ title, artist, img });
       })
       .catch((error) => {
         console.log(`error: ${error}`);
@@ -47,7 +39,7 @@ function App() {
       apiKey: process.env.REACT_APP_OPENAI_API_KEY,
     });
 
-    const testPrompt = 'recommend me one female indie song';
+    const testPrompt = 'recommend me one male indie song';
 
     new OpenAIApi(configuration)
       .createCompletion({
@@ -58,21 +50,22 @@ function App() {
       })
       .then((res) => {
         const { choices } = res.data;
-        const [title, singer] = choices[0].text.split('by');
+        const [title] = choices[0].text.split('by');
 
-        setMusic({ title, singer }); // 음악의 제목, 가수 데이터 저장
+        fetchMusicSearchApi(title);
       });
   }, []);
 
   useEffect(() => {
     fetchOpenAIApi(); // Mount 시 호출한다.
-    fetchMusicSearchApi();
   }, []);
 
-  const { title, singer } = music;
+  const { title, artist, img } = music;
+
   return (
     <div className="App">
-      {title} - {singer}
+      <img className="Thumbnail" src={img} alt="Thumbnail" />
+      {title} {artist}
     </div>
   );
 }
