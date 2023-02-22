@@ -36,21 +36,24 @@ function useMusicSearch() {
     }
   }, []);
 
-  const fetchOpenAI = useCallback(async (prompt: string) => {
-    try {
-      await OpenAIAPI.fetchOpenAI({
-        apiKey: OPENAI_API_KEY,
-        prompt,
-      }).then((res) => {
-        const { choices } = res.data;
-        const [title] = choices[0].text.split('by');
+  const fetchOpenAI = useCallback(
+    async (prompt: string) => {
+      try {
+        await OpenAIAPI.fetchOpenAI({
+          apiKey: OPENAI_API_KEY,
+          prompt,
+        }).then((res) => {
+          const { choices } = res.data;
+          const [title] = choices[0].text.split('by');
 
-        fetchMusicSearch(title);
-      });
-    } catch (error) {
-      console.log(`Error: ${error}`);
-    }
-  }, []);
+          fetchMusicSearch(title);
+        });
+      } catch (error) {
+        console.log(`Error: ${error}`);
+      }
+    },
+    [fetchMusicSearch]
+  );
 
   return { fetchOpenAI, music } as const;
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import './App.css';
 
 import useMusicSearch from 'hooks/useMusicSearch';
@@ -6,12 +6,13 @@ import useMusicSearch from 'hooks/useMusicSearch';
 function App() {
   const { fetchOpenAI, music } = useMusicSearch();
 
-  const recommendMusic = useCallback(async () => {
+  const recommendMusic = useCallback(() => {
     fetchOpenAI('recommend me one male indie song');
-  }, []);
+  }, [fetchOpenAI]);
 
   useEffect(() => {
     recommendMusic(); // Mount 시 호출한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { title, artist, img } = music;
