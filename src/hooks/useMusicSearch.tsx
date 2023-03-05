@@ -20,12 +20,12 @@ function useMusicSearch() {
         .then((str) => new XMLParser().parseFromString(str))
         .then((data) => {
           const { children } = data.children[0];
-          const item = children.filter((child) => child.name === 'item')[0]
+          const item = children.filter((child: any) => child.name === 'item')[0]
             .children;
 
-          const text = item.filter((el) => el.name === 'title')[0].value;
+          const text = item.filter((el: any) => el.name === 'title')[0].value;
           const img = item
-            .filter((el) => el.name === 'image')[0]
+            .filter((el: any) => el.name === 'image')[0]
             .value.replace('>', '');
           const [artist, title] = text.split(regExp);
 
@@ -44,9 +44,12 @@ function useMusicSearch() {
           prompt,
         }).then((res) => {
           const { choices } = res.data;
-          const [title] = choices[0].text.split('by');
+          const choice = choices[0];
+          if (choice && choice.text) {
+            const [title] = choice.text.split('by');
 
-          fetchMusicSearch(title);
+            fetchMusicSearch(title);
+          }
         });
       } catch (error) {
         console.log(`Error: ${error}`);

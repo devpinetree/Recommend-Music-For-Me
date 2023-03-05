@@ -3,11 +3,14 @@ import './App.css';
 
 import useMusicSearch from 'hooks/useMusicSearch';
 
+import MusicResultPage from 'components/MusicResultPage';
+import MusicSearchPage from 'components/MusicSearchPage';
+
 function App() {
   const { fetchOpenAI, music } = useMusicSearch();
 
   const recommendMusic = useCallback(() => {
-    fetchOpenAI('recommend me one male indie song');
+    // fetchOpenAI('recommend me one male indie song');
   }, [fetchOpenAI]);
 
   useEffect(() => {
@@ -19,8 +22,8 @@ function App() {
 
   return (
     <div className="App">
-      <img className="Thumbnail" src={img} alt="Thumbnail" />
-      {title} {artist}
+      <MusicSearchPage />
+      <MusicResultPage title={title} artist={artist} img={img} />
     </div>
   );
 }
